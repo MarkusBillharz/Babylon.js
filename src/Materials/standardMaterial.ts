@@ -1111,6 +1111,8 @@ export class StandardMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
 
+            MaterialHelper.PrepareCustomAttributes(attribs, mesh, defines);
+
             var shaderName = "default";
 
             var uniforms = ["world", "view", "viewProjection", "vEyePosition", "vLightsType", "vAmbientColor", "vDiffuseColor", "vSpecularColor", "vEmissiveColor", "visibility",
