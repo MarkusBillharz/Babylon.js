@@ -93,6 +93,8 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     public static OCCLUSION_ALGORITHM_TYPE_ACCURATE = 0;
     /** Use a conservative occlusion algorithm */
     public static OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
+    /** Array containing custom attribute names */
+    public _customShaderAttributes: Nullable<Array<string>> = null;
 
     /** Default culling strategy : this is an exclusion test and it's the more accurate.
      *  Test order :
