@@ -1460,9 +1460,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     /** @hidden */
     public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh {
 
-
-
-
         var visibleInstances = batch.visibleInstances[subMesh._id];
         if (!visibleInstances) {
             return this;
@@ -1495,9 +1492,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     this.customAttributeContainer.floatAttributeCount += 1;
                 }
 
-                console.log(this.customAttributeContainer.floatAttributeCount);
-
-                console.log((instanceStorage.instancesBufferSize /4 /16) * this.customAttributeContainer.floatAttributeCount);
                 // We only want 4 Bytes so /16.
                 attributeStorage.floatAttributeData = new Float32Array((instanceStorage.instancesBufferSize /4 /16) * this.customAttributeContainer.floatAttributeCount);
             }
@@ -1533,12 +1527,21 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 // Only use if our source mesh is using custom attributes,
                 // if we find an instance without attributes, fallback to source
                 if(this.customAttributeContainer) {
+
                     // Custom Attributes For Instances
                     if(instance.customAttributeContainer) {
                         // Grab floats from instance
-                        for (var attributeName in instance.customAttributeContainer.floatAttributes) {
-                            attributeStorage.floatAttributeData[floatAttributeOffset] = instance.customAttributeContainer.floatAttributes[attributeName];
-                            floatAttributeOffset++;
+                        for (var attributeName in this.customAttributeContainer.floatAttributes) {
+                            if(instance.customAttributeContainer.floatAttributes[attributeName])
+                            {
+                                attributeStorage.floatAttributeData[floatAttributeOffset] = instance.customAttributeContainer.floatAttributes[attributeName];
+                                floatAttributeOffset++;
+                            }
+                            else
+                            {
+                                attributeStorage.floatAttributeData[floatAttributeOffset] = this.customAttributeContainer.floatAttributes[attributeName];
+                                floatAttributeOffset++;
+                            }
                         }
                     }
                     else {
