@@ -1574,7 +1574,7 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
         if(this.customAttributeContainer) {
             // todo check if attribute is even dirty
-            // if (!floatAttributeBuffer || currentInstancesBufferSize != instanceStorage.instancesBufferSize)
+            if (!floatAttributeBuffer || currentInstancesBufferSize != instanceStorage.instancesBufferSize)
             {
                 if (floatAttributeBuffer) {
                     floatAttributeBuffer.dispose();
@@ -1590,9 +1590,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                     currentAttributeOffset += 1;
                 }
             }
-            // else {
-            //     floatAttributeBuffer!.updateDirectly(this._attributeDataStorage.floatAttributeData, 0, instancesCount);
-            // }
+            else {
+                floatAttributeBuffer!.updateDirectly(this._attributeDataStorage.floatAttributeData, 0, instancesCount);
+            }
         }
 
         this._bind(subMesh, effect, fillMode);
