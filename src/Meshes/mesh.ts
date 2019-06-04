@@ -1487,13 +1487,12 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 // todo remove
                 this.customAttributeContainer.floatAttributeCount = 0;
-                for (let _var in this.customAttributeContainer.floatAttributes)
-                {
+                for (let _var in this.customAttributeContainer.floatAttributes) {
                     this.customAttributeContainer.floatAttributeCount += 1;
                 }
 
                 // We only want 4 Bytes so /16.
-                attributeStorage.floatAttributeData = new Float32Array((instanceStorage.instancesBufferSize /4 /16) * this.customAttributeContainer.floatAttributeCount);
+                attributeStorage.floatAttributeData = new Float32Array(((instanceStorage.instancesBufferSize /4) /16) * this.customAttributeContainer.floatAttributeCount);
             }
         }
 
@@ -1527,11 +1526,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 // Only use if our source mesh is using custom attributes,
                 // if we find an instance without attributes, fallback to source
                 if(this.customAttributeContainer) {
-
                     // Custom Attributes For Instances
                     if(instance.customAttributeContainer) {
-                        // Grab floats from instance
                         for (var attributeName in this.customAttributeContainer.floatAttributes) {
+                            // Grab floats from instance if it exists, otherwise, default to source
                             if(instance.customAttributeContainer.floatAttributes[attributeName])
                             {
                                 attributeStorage.floatAttributeData[floatAttributeOffset] = instance.customAttributeContainer.floatAttributes[attributeName];
@@ -1552,7 +1550,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                         }
                     }
                 }
-
             }
         }
 
@@ -1585,7 +1582,6 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
                 let currentAttributeOffset = 0;
                 for (var attributeName in this.customAttributeContainer.floatAttributes) {
-                    // console.log(attributeName);
                     this.setVerticesBuffer(floatAttributeBuffer.createVertexBuffer(attributeName, currentAttributeOffset, 1));
                     currentAttributeOffset += 1;
                 }
