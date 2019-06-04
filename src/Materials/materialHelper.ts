@@ -576,13 +576,13 @@ export class MaterialHelper {
      * Adds custom Defines and Attributes according to the effect defines.
      * @param attribs The current list of supported attribs
      * @param mesh The mesh to prepare the morph targets attributes for
-     * @param defines The current Defines of the effect
      */
-    public static PrepareCustomAttributes(attribs: string[], mesh: AbstractMesh, defines: any): void {
+    public static PrepareCustomAttributes(attribs: string[], mesh: AbstractMesh): void {
 
-        if (mesh._customShaderAttributes)
+        if (mesh.customAttributeContainer)
         {
-            for (let attributeName of mesh._customShaderAttributes)
+            // Float Attributes
+            for (let attributeName in mesh.customAttributeContainer.floatAttributes)
             {
                 attribs.push(attributeName);
             }

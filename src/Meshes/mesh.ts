@@ -58,6 +58,15 @@ export class _CreationDataStorage {
 /**
  * @hidden
  **/
+class _AttributeDataStorage {
+    floatAttributeBuffer: Nullable<Buffer>;
+    floatAttributeData: Float32Array;
+}
+
+
+/**
+ * @hidden
+ **/
 class _InstanceDataStorage {
     public visibleInstances: any = {};
     public batchCache = new _InstancesBatch();
@@ -80,6 +89,7 @@ export class _InstancesBatch {
     public renderSelf = new Array<boolean>();
     public hardwareInstancedRendering = new Array<boolean>();
 }
+
 
 /**
  * @hidden
@@ -320,6 +330,9 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
     public _delayInfo: Array<string>;
     /** @hidden */
     public _delayLoadingFunction: (any: any, mesh: Mesh) => void;
+
+    /** @hidden */
+    public _attributeDataStorage = new _AttributeDataStorage();
 
     /** @hidden */
     public _instanceDataStorage = new _InstanceDataStorage();
@@ -1446,6 +1459,10 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
 
     /** @hidden */
     public _renderWithInstances(subMesh: SubMesh, fillMode: number, batch: _InstancesBatch, effect: Effect, engine: Engine): Mesh {
+
+
+
+
         var visibleInstances = batch.visibleInstances[subMesh._id];
         if (!visibleInstances) {
             return this;
@@ -1457,15 +1474,37 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
         var matricesCount = visibleInstances.length + 1;
         var bufferSize = matricesCount * 16 * 4;
 
+        let attributeStorage = this._attributeDataStorage;
+        var floatAttributeBuffer = attributeStorage.floatAttributeBuffer;
+
+
         while (instanceStorage.instancesBufferSize < bufferSize) {
             instanceStorage.instancesBufferSize *= 2;
         }
 
         if (!instanceStorage.instancesData || currentInstancesBufferSize != instanceStorage.instancesBufferSize) {
             instanceStorage.instancesData = new Float32Array(instanceStorage.instancesBufferSize / 4);
+
+
+            if(this.customAttributeContainer) {
+
+                // todo remove
+                this.customAttributeContainer.floatAttributeCount = 0;
+                for (let _var in this.customAttributeContainer.floatAttributes)
+                {
+                    this.customAttributeContainer.floatAttributeCount += 1;
+                }
+
+                console.log(this.customAttributeContainer.floatAttributeCount);
+
+                console.log((instanceStorage.instancesBufferSize /4 /16) * this.customAttributeContainer.floatAttributeCount);
+                // We only want 4 Bytes so /16.
+                attributeStorage.floatAttributeData = new Float32Array((instanceStorage.instancesBufferSize /4 /16) * this.customAttributeContainer.floatAttributeCount);
+            }
         }
 
         var offset = 0;
+        var floatAttributeOffset = 0;
         var instancesCount = 0;
 
         var world = this._effectiveMesh.getWorldMatrix();
@@ -1473,6 +1512,15 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             world.copyToArray(instanceStorage.instancesData, offset);
             offset += 16;
             instancesCount++;
+
+            // Custom attributes for source mesh
+            if(this.customAttributeContainer) {
+                // Handle Floats
+                for (var attributeName in this.customAttributeContainer.floatAttributes) {
+                    attributeStorage.floatAttributeData[floatAttributeOffset] = this.customAttributeContainer.floatAttributes[attributeName];
+                    floatAttributeOffset++;
+                }
+            }
         }
 
         if (visibleInstances) {
@@ -1481,6 +1529,27 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
                 instance.getWorldMatrix().copyToArray(instanceStorage.instancesData, offset);
                 offset += 16;
                 instancesCount++;
+
+                // Only use if our source mesh is using custom attributes,
+                // if we find an instance without attributes, fallback to source
+                if(this.customAttributeContainer) {
+                    // Custom Attributes For Instances
+                    if(instance.customAttributeContainer) {
+                        // Grab floats from instance
+                        for (var attributeName in instance.customAttributeContainer.floatAttributes) {
+                            attributeStorage.floatAttributeData[floatAttributeOffset] = instance.customAttributeContainer.floatAttributes[attributeName];
+                            floatAttributeOffset++;
+                        }
+                    }
+                    else {
+                        // Grab floats from source
+                        for (var attributeName in this.customAttributeContainer.floatAttributes) {
+                            attributeStorage.floatAttributeData[floatAttributeOffset] = this.customAttributeContainer.floatAttributes[attributeName];
+                            floatAttributeOffset++;
+                        }
+                    }
+                }
+
             }
         }
 
@@ -1498,6 +1567,29 @@ export class Mesh extends AbstractMesh implements IGetSetVerticesData {
             this.setVerticesBuffer(instancesBuffer.createVertexBuffer("world3", 12, 4));
         } else {
             instancesBuffer!.updateDirectly(instanceStorage.instancesData, 0, instancesCount);
+        }
+
+        if(this.customAttributeContainer) {
+            // todo check if attribute is even dirty
+            // if (!floatAttributeBuffer || currentInstancesBufferSize != instanceStorage.instancesBufferSize)
+            {
+                if (floatAttributeBuffer) {
+                    floatAttributeBuffer.dispose();
+                }
+
+                floatAttributeBuffer = new Buffer(engine, this._attributeDataStorage.floatAttributeData, true, this.customAttributeContainer.floatAttributeCount, false, true);
+                attributeStorage.floatAttributeBuffer = floatAttributeBuffer;
+
+                let currentAttributeOffset = 0;
+                for (var attributeName in this.customAttributeContainer.floatAttributes) {
+                    // console.log(attributeName);
+                    this.setVerticesBuffer(floatAttributeBuffer.createVertexBuffer(attributeName, currentAttributeOffset, 1));
+                    currentAttributeOffset += 1;
+                }
+            }
+            // else {
+            //     floatAttributeBuffer!.updateDirectly(this._attributeDataStorage.floatAttributeData, 0, instancesCount);
+            // }
         }
 
         this._bind(subMesh, effect, fillMode);

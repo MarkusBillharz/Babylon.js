@@ -1111,7 +1111,7 @@ export class StandardMaterial extends PushMaterial {
             MaterialHelper.PrepareAttributesForInstances(attribs, defines);
             MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
 
-            MaterialHelper.PrepareCustomAttributes(attribs, mesh, defines);
+            MaterialHelper.PrepareCustomAttributes(attribs, mesh);
 
             var shaderName = "default";
 

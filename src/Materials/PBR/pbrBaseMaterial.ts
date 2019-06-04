@@ -1168,7 +1168,7 @@ export abstract class PBRBaseMaterial extends PushMaterial {
         MaterialHelper.PrepareAttributesForBones(attribs, mesh, defines, fallbacks);
         MaterialHelper.PrepareAttributesForInstances(attribs, defines);
         MaterialHelper.PrepareAttributesForMorphTargets(attribs, mesh, defines);
-        MaterialHelper.PrepareCustomAttributes(attribs, mesh, defines);
+        MaterialHelper.PrepareCustomAttributes(attribs, mesh);
 
         var shaderName = "pbr";
 

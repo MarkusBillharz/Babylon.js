@@ -1,6 +1,6 @@
 import { Tools } from "../Misc/tools";
 import { Observable } from "../Misc/observable";
-import { Nullable, FloatArray, IndicesArray, DeepImmutable } from "../types";
+import {Nullable, FloatArray, IndicesArray, DeepImmutable} from "../types";
 import { Camera } from "../Cameras/camera";
 import { Scene, IDisposable } from "../scene";
 import { Quaternion, Matrix, Vector3, Color3, Color4, Plane, Tmp, Epsilon, Axis, Vector2 } from "../Maths/math";
@@ -59,6 +59,19 @@ class _FacetDataStorage {
     public invertedMatrix: Matrix; // Inverted world matrix.
 }
 
+export class CustomAttributeContainer {
+
+    public floatAttributeCount: number = 0;
+    public _floatAttributesAreDirty: boolean= false;
+    public floatAttributes: { [key: string]: number; } = {};
+
+    // constructor() {
+    //     console.log("Constructing");
+    //     this.floatAttributes = {};
+    // }
+
+}
+
 /**
  * @hidden
  **/
@@ -94,7 +107,7 @@ export class AbstractMesh extends TransformNode implements IDisposable, ICullabl
     /** Use a conservative occlusion algorithm */
     public static OCCLUSION_ALGORITHM_TYPE_CONSERVATIVE = 1;
     /** Array containing custom attribute names */
-    public _customShaderAttributes: Nullable<Array<string>> = null;
+    public customAttributeContainer: Nullable<CustomAttributeContainer> = null;
 
     /** Default culling strategy : this is an exclusion test and it's the more accurate.
      *  Test order :
