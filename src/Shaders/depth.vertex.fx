@@ -24,10 +24,13 @@ attribute vec2 uv2;
 
 varying float vDepthMetric;
 
+#define CUSTOM_VERTEX_DEFINITIONS
+
 void main(void)
 {
 vec3 positionUpdated = position;
 #include<morphTargetsVertex>[0..maxSimultaneousMorphTargets]
+#define CUSTOM_VERTEX_UPDATE_POSITION
 
 #include<instancesVertex>
 

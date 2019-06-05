@@ -149,6 +149,9 @@ export class DepthRenderer {
         };
     }
 
+    private _createdAndActive = false;
+    private _cachedCustomAttributes: Array<string>;
+
     /**
      * Creates the depth rendering effect and checks if the effect is ready.
      * @param subMesh The submesh to be used to render the depth map of
@@ -214,15 +217,61 @@ export class DepthRenderer {
             MaterialHelper.PushAttributesForInstances(attribs);
         }
 
+        let customShaderName = "depth";
+
+        if(this._createdAndActive && mesh.customAttributeContainer) {
+            customShaderName += material._createdShaderName;
+            attribs = attribs.concat(this._cachedCustomAttributes);
+            for (let attributeName in mesh.customAttributeContainer.floatAttributes) {
+                attribs.push(attributeName);
+                this._cachedCustomAttributes.push(attributeName);
+            }
+        }
+        else if (material.CustomParts && mesh.customAttributeContainer) {
+            let depthVertexShader = Effect.ShadersStore["depthVertexShader"];
+            let depthPixelShader = Effect.ShadersStore["depthPixelShader"];
+
+            // Update Shader Name
+            customShaderName += material._createdShaderName;
+
+            // Get all attribute names and cache them
+            this._cachedCustomAttributes = [];
+
+            for (let attributeName in mesh.customAttributeContainer.floatAttributes) {
+                attribs.push(attributeName);
+                this._cachedCustomAttributes.push(attributeName);
+            }
+
+            if (material.CustomParts.Vertex_Before_PositionUpdated) {
+                depthVertexShader = depthVertexShader.replace('#define CUSTOM_VERTEX_UPDATE_POSITION', material.CustomParts.Vertex_Before_PositionUpdated);
+            }
+
+            if (material.CustomParts.Vertex_Definitions) {
+                depthVertexShader = depthVertexShader.replace('#define CUSTOM_VERTEX_DEFINITIONS', material.CustomParts.Vertex_Definitions);
+            }
+
+            Effect.ShadersStore[customShaderName + "VertexShader"] = depthVertexShader;
+            Effect.ShadersStore[customShaderName + "PixelShader"] = depthPixelShader;
+            this._cachedDefines = "refresh_please_<3";
+            this._createdAndActive = true;
+        }
+
+
         // Get correct effect
         var join = defines.join("\n");
         if (this._cachedDefines !== join) {
+
+            console.log("Guess its happening here");
+            console.log(customShaderName);
             this._cachedDefines = join;
-            this._effect = this._scene.getEngine().createEffect("depth",
+            this._effect = this._scene.getEngine().createEffect(customShaderName,
                 attribs,
                 ["world", "mBones", "viewProjection", "diffuseMatrix", "depthValues", "morphTargetInfluences"],
                 ["diffuseSampler"], join,
                 undefined, undefined, undefined, { maxSimultaneousMorphTargets: numMorphInfluencers });
+
+            console.log(attribs);
+            console.log(this._effect);
         }
 
         return this._effect.isReady();
